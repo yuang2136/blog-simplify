@@ -20,3 +20,8 @@ blog-simplify/
     â”‚           â””â”€â”€ BlogMapper.xml
     â””â”€â”€ test/
         â””â”€â”€ java/
+
+½Ó¿ÚÎÄµµ£º
+- OpenAPI JSON: http://localhost:8081/v3/api-docs
+- Swagger UI: http://localhost:8081/swagger-ui/index.html
+(ÔÚ Swagger UI ÖĞµã»÷ Authorize£¬ÊäÈë Bearer <token> Íê³É¼øÈ¨)
