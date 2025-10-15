@@ -31,4 +31,7 @@ public class Blog {
 
     /** 创建时间，由服务端维护。 */
     private LocalDateTime createdTime;
+
+    /** 是否已发布，未发布的文章仅管理员可见。 */
+    private Boolean published;
 }

@@ -23,4 +23,11 @@ public class User {
 
     /** 登录密码（演示用明文）。 */
     private String password;
+
+    /**
+     * 用户角色，控制访问权限。
+     * <p>
+     * 约定使用大写字符串存储，例如 "USER"、"ADMIN"。
+     */
+    private String role;
 }

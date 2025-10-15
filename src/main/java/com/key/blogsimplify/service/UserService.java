@@ -1,6 +1,9 @@
 package com.key.blogsimplify.service;
 
+import com.key.blogsimplify.dto.AuthResponse;
 import com.key.blogsimplify.entity.User;
+
+import java.util.List;
 
 /**
  * 用户模块业务接口。
@@ -23,5 +26,17 @@ public interface UserService {
      * @param user 登录凭证
      * @return 成功返回 JWT token，失败返回 null
      */
-    String login(User user);
+    AuthResponse login(User user);
+
+    /** 查询全部用户，后台管理使用。 */
+    List<User> findAll();
+
+    /** 更新用户角色。 */
+    boolean updateRole(Long userId, String role);
+
+    /** 删除用户。 */
+    boolean deleteUser(Long userId);
+
+    /** 统计用户数量。 */
+    long countUsers();
 }

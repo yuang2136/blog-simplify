@@ -25,6 +25,12 @@ public class BlogServiceImpl implements BlogService {
     /** 查询全部博客，不附加任何条件。 */
     @Override
     public List<Blog> findAll() {
+        return blogMapper.selectList(new QueryWrapper<Blog>().eq("published", true));
+    }
+
+    /** 查询全部博客（含草稿），用于后台管理。 */
+    @Override
+    public List<Blog> findAllForAdmin() {
         return blogMapper.selectList(new QueryWrapper<>());
     }
 
@@ -40,6 +46,9 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public boolean add(Blog blog) {
         blog.setCreatedTime(LocalDateTime.now());
+        if (blog.getPublished() == null) {
+            blog.setPublished(true);
+        }
         return blogMapper.insert(blog) > 0;
     }
 
@@ -47,5 +56,36 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public boolean delete(Long id) {
         return blogMapper.deleteById(id) > 0;
+    }
+
+    /** 更新博客内容。 */
+    @Override
+    public boolean update(Blog blog) {
+        return blogMapper.updateById(blog) > 0;
+    }
+
+    /** 修改博客发布状态。 */
+    @Override
+    public boolean updatePublishStatus(Long id, boolean published) {
+        Blog blog = new Blog();
+        blog.setId(id);
+        blog.setPublished(published);
+        return blogMapper.updateById(blog) > 0;
+    }
+
+    @Override
+    public long countAll() {
+        return blogMapper.selectCount(new QueryWrapper<>());
+    }
+
+    @Override
+    public long countByPublished(boolean published) {
+        QueryWrapper<Blog> wrapper = new QueryWrapper<>();
+        if (published) {
+            wrapper.eq("published", true);
+        } else {
+            wrapper.and(w -> w.eq("published", false).or().isNull("published"));
+        }
+        return blogMapper.selectCount(wrapper);
     }
 }
