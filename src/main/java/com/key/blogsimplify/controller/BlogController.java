@@ -1,7 +1,15 @@
 package com.key.blogsimplify.controller;
 
+import com.key.blogsimplify.dto.MessageResponse;
 import com.key.blogsimplify.entity.Blog;
+import com.key.blogsimplify.exception.BusinessException;
+import com.key.blogsimplify.exception.NotFoundException;
 import com.key.blogsimplify.service.BlogService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +22,8 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/blog")
+@Tag(name = "博客接口")
+@SecurityRequirement(name = "BearerAuth")
 public class BlogController {
 
     private final BlogService blogService;
@@ -24,14 +34,20 @@ public class BlogController {
 
     /** 获取全部博客文章，对应 GET /blog/list。 */
     @GetMapping("/list")
-    public List<Blog> list() {
-        return blogService.findAll();
+    @Operation(summary = "查询全部已发布文章")
+    public ResponseEntity<List<Blog>> list() {
+        return ResponseEntity.ok(blogService.findAll());
     }
 
     /** 根据主键查询博客详情，对应 GET /blog/{id}。 */
     @GetMapping("/{id}")
-    public Blog findOne(@PathVariable Long id) {
-        return blogService.findById(id);
+    @Operation(summary = "查询文章详情")
+    public ResponseEntity<Blog> findOne(@PathVariable Long id) {
+        Blog blog = blogService.findById(id);
+        if (blog == null || Boolean.FALSE.equals(blog.getPublished())) {
+            throw new NotFoundException("文章不存在");
+        }
+        return ResponseEntity.ok(blog);
     }
 
     /**
@@ -41,8 +57,13 @@ public class BlogController {
      * @return 操作是否成功的提示语
      */
     @PostMapping("/add")
-    public String add(@RequestBody Blog blog) {
-        return blogService.add(blog) ? "添加成功" : "添加失败";
+    @Operation(summary = "新增文章")
+    public ResponseEntity<MessageResponse> add(@RequestBody Blog blog) {
+        boolean success = blogService.add(blog);
+        if (!success) {
+            throw new BusinessException("添加文章失败");
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("添加成功"));
     }
 
     /**
@@ -52,7 +73,10 @@ public class BlogController {
      * @return 删除结果提示
      */
     @DeleteMapping("/delete/{id}")
-    public String delete(@PathVariable Long id) {
-        return blogService.delete(id) ? "删除成功" : "删除失败";
+    @Operation(summary = "删除文章")
+    public ResponseEntity<MessageResponse> delete(@PathVariable Long id) {
+        return blogService.delete(id)
+                ? ResponseEntity.ok(new MessageResponse("删除成功"))
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("文章不存在"));
     }
 }

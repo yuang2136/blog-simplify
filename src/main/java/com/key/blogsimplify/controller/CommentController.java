@@ -1,10 +1,16 @@
 package com.key.blogsimplify.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.key.blogsimplify.config.JwtUtil;
 import com.key.blogsimplify.entity.Comment;
 import com.key.blogsimplify.service.CommentService;
 import jakarta.servlet.http.HttpServletRequest;
+import com.key.blogsimplify.dto.MessageResponse;
+import com.key.blogsimplify.exception.BusinessException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -15,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/comment")
+@Tag(name = "评论接口")
 public class CommentController {
 
     private final CommentService commentService;
@@ -32,13 +39,18 @@ public class CommentController {
      * 3. 将用户名与评论数据一起交给业务层。
      */
     @PostMapping("/add")
-    public String add(@RequestBody Comment comment, HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        String username = JwtUtil.validateToken(token);
+    @Operation(summary = "新增评论")
+    @SecurityRequirement(name = "BearerAuth")
+    public ResponseEntity<MessageResponse> add(@RequestBody Comment comment, HttpServletRequest request) {
+        String username = (String) request.getAttribute("username");
         if (username == null) {
-            return "未登录或Token无效";
+            throw new BusinessException("未登录或Token无效");
         }
-        return commentService.addComment(comment, username) ? "评论成功" : "评论失败";
+        boolean success = commentService.addComment(comment, username);
+        if (!success) {
+            throw new BusinessException("评论失败");
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("评论成功"));
     }
 
     /**
@@ -50,11 +62,12 @@ public class CommentController {
      * @return MyBatis-Plus 的分页对象，包含评论集合与分页元数据
      */
     @GetMapping("/list/{blogId}")
-    public Page<Comment> list(
+    @Operation(summary = "分页查询评论")
+    public ResponseEntity<Page<Comment>> list(
             @PathVariable Long blogId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        return commentService.listByBlogId(blogId, page, size);
+        return ResponseEntity.ok(commentService.listByBlogId(blogId, page, size));
     }
 }

@@ -9,8 +9,11 @@ import java.util.List;
  */
 public interface BlogService {
 
-    /** 查询全部博客文章。 */
+    /** 查询全部已发布博客文章。 */
     List<Blog> findAll();
+
+    /** 查询全部博客文章（含草稿），用于后台管理。 */
+    List<Blog> findAllForAdmin();
 
     /**
      * 根据主键查询博客。
@@ -35,4 +38,31 @@ public interface BlogService {
      * @return 是否删除成功
      */
     boolean delete(Long id);
+
+    /**
+     * 更新博客内容。
+     *
+     * @param blog 包含主键及最新内容的实体
+     * @return 是否更新成功
+     */
+    boolean update(Blog blog);
+
+    /**
+     * 修改博客发布状态。
+     *
+     * @param id        博客主键
+     * @param published 是否发布
+     * @return 是否更新成功
+     */
+    boolean updatePublishStatus(Long id, boolean published);
+
+    /**
+     * 统计博客总数。
+     */
+    long countAll();
+
+    /**
+     * 统计已发布或未发布的文章数量。
+     */
+    long countByPublished(boolean published);
 }

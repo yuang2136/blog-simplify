@@ -1,7 +1,13 @@
 package com.key.blogsimplify.controller;
 
+import com.key.blogsimplify.dto.AuthResponse;
+import com.key.blogsimplify.dto.MessageResponse;
 import com.key.blogsimplify.entity.User;
 import com.key.blogsimplify.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -11,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/user")
+@Tag(name = "用户接口")
 public class UserController {
 
     private final UserService userService;
@@ -26,8 +33,10 @@ public class UserController {
      * @return 注册结果提示
      */
     @PostMapping("/register")
-    public String register(@RequestBody User user) {
-        return userService.register(user) ? "注册成功" : "注册失败";
+    @Operation(summary = "注册新用户")
+    public ResponseEntity<MessageResponse> register(@RequestBody User user) {
+        userService.register(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("注册成功"));
     }
 
     /**
@@ -37,8 +46,8 @@ public class UserController {
      * @return 成功返回 JWT 字符串，失败时返回提示语
      */
     @PostMapping("/login")
-    public String login(@RequestBody User user) {
-        String token = userService.login(user);
-        return token != null ? token : "用户名或密码错误";
+    @Operation(summary = "用户登录，返回 JWT")
+    public ResponseEntity<AuthResponse> login(@RequestBody User user) {
+        return ResponseEntity.ok(userService.login(user));
     }
 }
